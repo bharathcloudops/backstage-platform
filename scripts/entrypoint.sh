@@ -36,8 +36,6 @@ load_secret() {
 for variable_name in \
   BACKSTAGE_BACKEND_SECRET \
   GITHUB_TOKEN \
-  JENKINS_API_TOKEN \
-  JENKINS_USERNAME \
   POSTGRES_PASSWORD; do
   load_secret "$variable_name"
 done

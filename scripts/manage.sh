@@ -82,8 +82,6 @@ deploy_stack() {
     all(
       "backend_secret",
       "github_token",
-      "jenkins_api_token",
-      "jenkins_username",
       "postgres_password";
       . as $key | $ARGS.named.bundle[$key]
     )
@@ -98,14 +96,13 @@ deploy_stack() {
   install -d -m 0755 "$release_path"
   cp -a "$source_root/." "$release_path/"
   install -d -m 0700 "$release_path/secrets"
-  for mapping in backend_secret:backend-secret github_token:github-token jenkins_api_token:jenkins-api-token jenkins_username:jenkins-username postgres_password:postgres-password; do
+  for mapping in backend_secret:backend-secret github_token:github-token postgres_password:postgres-password; do
     write_secret "${mapping%%:*}" "${mapping##*:}"
   done
   cat > "$release_path/.env" <<EOF
 BACKSTAGE_BASE_URL=${BACKSTAGE_BASE_URL:?}
 BACKSTAGE_BIND_ADDRESS=${BACKSTAGE_BIND_ADDRESS:?}
 BACKSTAGE_VERSION=${release_ref//[^a-zA-Z0-9._-]/-}
-JENKINS_BASE_URL=${JENKINS_BASE_URL:?}
 EOF
   chmod 0600 "$release_path/.env"
   if [[ -L "$install_root/current" ]]; then ln -sfn "$(readlink -f "$install_root/current")" "$install_root/previous"; fi

@@ -4,7 +4,7 @@ This directory contains the deployable BharathCoudOps frontend and backend works
 
 ## Application Package
 
-`app` uses Backstage's new frontend system. It owns the guest sign-in page, sidebar, home widgets, catalog routes, Jenkins integration, and the Cloud Estate, Environments, Sandboxes, Approvals, and Operations views.
+`app` uses Backstage's new frontend system. It owns the guest sign-in page, sidebar, home widgets, catalog routes, and the Cloud Estate, Environments, Sandboxes, Approvals, and Operations views.
 
 ```bash
 yarn workspace app start
@@ -14,7 +14,7 @@ yarn workspace app build
 
 ## Backend Package
 
-`backend` registers the application, proxy, authentication, catalog, scaffolder, TechDocs, permissions, search, Jenkins, notifications, signals, user settings, Kubernetes, and MCP Actions plugins. Its Dockerfile builds the complete production image from the repository root.
+`backend` registers the application, proxy, authentication, catalog, scaffolder, TechDocs, permissions, search, notifications, signals, user settings, Kubernetes, and MCP Actions plugins. Its Dockerfile builds the complete production image from the repository root.
 
 ```bash
 yarn workspace backend start

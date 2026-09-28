@@ -66,9 +66,6 @@ services:
       BACKSTAGE_BACKEND_SECRET_FILE: /run/secrets/backend_secret
       BACKSTAGE_BASE_URL: ${BACKSTAGE_BASE_URL:?BACKSTAGE_BASE_URL is required}
       GITHUB_TOKEN_FILE: /run/secrets/github_token
-      JENKINS_API_TOKEN_FILE: /run/secrets/jenkins_api_token
-      JENKINS_BASE_URL: ${JENKINS_BASE_URL:?JENKINS_BASE_URL is required}
-      JENKINS_USERNAME_FILE: /run/secrets/jenkins_username
       NODE_OPTIONS: --max-old-space-size=1536
       POSTGRES_HOST: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
@@ -91,8 +88,6 @@ services:
     secrets:
       - backend_secret
       - github_token
-      - jenkins_api_token
-      - jenkins_username
       - postgres_password
     security_opt:
       - no-new-privileges:true
@@ -161,10 +156,6 @@ secrets:
     file: ./secrets/backend-secret
   github_token:
     file: ./secrets/github-token
-  jenkins_api_token:
-    file: ./secrets/jenkins-api-token
-  jenkins_username:
-    file: ./secrets/jenkins-username
   postgres_password:
     file: ./secrets/postgres-password
 

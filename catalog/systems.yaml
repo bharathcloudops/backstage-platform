@@ -34,43 +34,8 @@ metadata:
   title: BharathCoudOps Developer Portal
   annotations:
     github.com/project-slug: bharathadigopula/backstage-platform
-    jenkins.io/job-full-name: platform:backstage-platform/validate/main
 spec:
   type: website
-  lifecycle: production
-  owner: group:default/platform-engineering
-  system: platform-automation
----
-#==============================================================================
-# JENKINS CONTROLLER AUTOMATION COMPONENT
-#==============================================================================
-
-apiVersion: backstage.io/v1alpha1
-kind: Component
-metadata:
-  name: jenkins-controller-automation
-  annotations:
-    github.com/project-slug: bharathadigopula/jenkins-controller-automation
-    jenkins.io/job-full-name: platform:jenkins-controller-automation/validate/main
-spec:
-  type: service
-  lifecycle: production
-  owner: group:default/platform-engineering
-  system: platform-automation
----
-#==============================================================================
-# JENKINS PIPELINE TEMPLATES COMPONENT
-#==============================================================================
-
-apiVersion: backstage.io/v1alpha1
-kind: Component
-metadata:
-  name: jenkins-pipeline-templates
-  annotations:
-    github.com/project-slug: bharathadigopula/jenkins-pipeline-templates
-    jenkins.io/job-full-name: platform:jenkins-pipeline-templates/validate/main
-spec:
-  type: library
   lifecycle: production
   owner: group:default/platform-engineering
   system: platform-automation
@@ -85,7 +50,6 @@ metadata:
   name: github-pipeline-templates
   annotations:
     github.com/project-slug: bharathadigopula/github-pipeline-templates
-    jenkins.io/job-full-name: platform:github-pipeline-templates/validate/main
 spec:
   type: library
   lifecycle: production
@@ -102,7 +66,6 @@ metadata:
   name: bharath-oci-host-config
   annotations:
     github.com/project-slug: bharathadigopula/bharath-oci-host-config
-    jenkins.io/job-full-name: platform:bharath-oci-host-config/validate/main
 spec:
   type: service
   lifecycle: production
@@ -119,7 +82,6 @@ metadata:
   name: shared-host-automation
   annotations:
     github.com/project-slug: bharathadigopula/shared-host-automation
-    jenkins.io/job-full-name: platform:shared-host-automation/validate/main
 spec:
   type: library
   lifecycle: production
@@ -136,7 +98,6 @@ metadata:
   name: monitoring-stack-automation
   annotations:
     github.com/project-slug: bharathadigopula/monitoring-stack-automation
-    jenkins.io/job-full-name: platform:monitoring-stack-automation/validate/main
 spec:
   type: service
   lifecycle: production
@@ -153,7 +114,6 @@ metadata:
   name: terraform-oci-modules
   annotations:
     github.com/project-slug: bharathadigopula/terraform-oci-modules
-    jenkins.io/job-full-name: platform:terraform-oci-modules/validate/main
 spec:
   type: library
   lifecycle: production
@@ -170,7 +130,6 @@ metadata:
   name: tf-bharath-oci-infra
   annotations:
     github.com/project-slug: bharathadigopula/tf-bharath-oci-infra
-    jenkins.io/job-full-name: platform:tf-bharath-oci-infra/validate/main
 spec:
   type: service
   lifecycle: production

@@ -33,8 +33,8 @@ fi
 # SECRET BUNDLE VALIDATION
 #==============================================================================
 
-sample_bundle='{"backend_secret":"01234567890123456789012345678901","github_token":"github-token-at-least-twenty","jenkins_api_token":"jenkins-token","jenkins_username":"backstage","postgres_password":"postgres-password-at-least-sixteen"}'
-for key in backend_secret github_token jenkins_api_token jenkins_username postgres_password; do
+sample_bundle='{"backend_secret":"01234567890123456789012345678901","github_token":"github-token-at-least-twenty","postgres_password":"postgres-password-at-least-sixteen"}'
+for key in backend_secret github_token postgres_password; do
   jq -er --arg key "$key" '.[$key] | select(type == "string" and length > 0 and (contains("\n") | not))' <<< "$sample_bundle" >/dev/null
 done
 
@@ -44,8 +44,6 @@ if jq -e '
   all(
     "backend_secret",
     "github_token",
-    "jenkins_api_token",
-    "jenkins_username",
     "postgres_password";
     . as $key | $ARGS.named.bundle[$key]
   )
@@ -58,7 +56,7 @@ fi
 # OCI PAYLOAD VALIDATION
 #==============================================================================
 
-sample_arguments=$(jq -cn --arg bundle "$sample_bundle" '["deploy","bharathadigopula/backstage-platform","v1.0.0","https://backstage.bharathcloudops.com","10.10.10.69","https://jenkins.bharathcloudops.com","",$bundle]')
+sample_arguments=$(jq -cn --arg bundle "$sample_bundle" '["deploy","bharathcloudops/backstage-platform","v1.0.0","https://backstage.bharathcloudops.com","10.10.10.69","",$bundle]')
 argument_line=$(jq -r '[.[] | @sh] | "set -- " + join(" ")' <<< "$sample_arguments")
 rendered_size=$(printf '%s\n%s' "$argument_line" "$(cat "$repository_root/scripts/bootstrap.sh")" | wc -c | tr -d ' ')
 (( rendered_size <= 4096 )) || { printf 'Rendered bootstrap exceeds 4096 bytes.\n' >&2; exit 1; }
@@ -71,9 +69,9 @@ if docker compose version >/dev/null 2>&1; then
   temporary_directory=$(mktemp -d)
   trap 'rm -rf "$temporary_directory"' EXIT
   mkdir "$temporary_directory/secrets"
-  for secret in backend-secret github-token jenkins-api-token jenkins-username microsoft-client-id microsoft-client-secret microsoft-tenant-id postgres-password; do printf 'validation-only\n' > "$temporary_directory/secrets/$secret"; done
+  for secret in backend-secret github-token microsoft-client-id microsoft-client-secret microsoft-tenant-id postgres-password; do printf 'validation-only\n' > "$temporary_directory/secrets/$secret"; done
   cp "$repository_root/compose.yaml" "$temporary_directory/compose.yaml"
-  BACKSTAGE_BASE_URL=https://backstage.example.invalid BACKSTAGE_BIND_ADDRESS=127.0.0.1 BACKSTAGE_VERSION=validation JENKINS_BASE_URL=https://jenkins.example.invalid docker compose --project-directory "$temporary_directory" --file "$temporary_directory/compose.yaml" config --quiet
+  BACKSTAGE_BASE_URL=https://backstage.example.invalid BACKSTAGE_BIND_ADDRESS=127.0.0.1 BACKSTAGE_VERSION=validation docker compose --project-directory "$temporary_directory" --file "$temporary_directory/compose.yaml" config --quiet
 fi
 
 if grep -Fq "\$VERSION_CODENAME" "$repository_root/scripts/install-docker.sh" || \

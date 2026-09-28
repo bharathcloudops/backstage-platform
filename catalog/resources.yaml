@@ -37,25 +37,6 @@ spec:
   system: platform-automation
 ---
 #==============================================================================
-# JENKINS CONTROLLER SERVICE
-#==============================================================================
-
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: jenkins-controller
-  title: Jenkins Controller
-  annotations:
-    cloud.bharathcoudops.dev/provider: OCI
-    cloud.bharathcoudops.dev/environment: Production
-    cloud.bharathcoudops.dev/region: uk-london-1
-spec:
-  type: platform-service
-  lifecycle: production
-  owner: group:default/platform-engineering
-  system: platform-automation
----
-#==============================================================================
 # MONITORING STACK SERVICE
 #==============================================================================
 
