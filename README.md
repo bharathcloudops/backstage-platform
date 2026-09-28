@@ -57,7 +57,7 @@ Deployment reads one JSON object from OCI Vault and writes each value to a root-
 | `jenkins_username`  | `JENKINS_USERNAME`         | Jenkins service account                                                        |
 | `postgres_password` | `POSTGRES_PASSWORD`        | PostgreSQL password; use at least 16 random characters                         |
 
-## Validation
+## ✅ Validation
 
 Run the same checks used by Jenkins from the repository root:
 
@@ -70,7 +70,9 @@ node .yarn/releases/yarn-4.13.0.cjs workspace app test --watch=false
 node .yarn/releases/yarn-4.13.0.cjs build:backend
 ```
 
-Jenkins runs [scripts/validate-ci.sh](scripts/validate-ci.sh) inside Node 24 through `backstage-platform/validate/main`. That job uses the Jenkins `platform` label and never targets `k3s`.
+GitHub Actions runs [scripts/validate-ci.sh](scripts/validate-ci.sh) in the pinned
+Node 24 image. Public pull requests remain on the free GitHub-hosted runner and
+cannot access the private OCI host.
 
 ## Production Stack
 
@@ -102,16 +104,16 @@ All published ports bind to `BACKSTAGE_BIND_ADDRESS`. Public access must pass th
 
 Backups are retained for seven days and match `/var/backups/backstage-platform/backstage-YYYYMMDDTHHMMSSZ.sql.gz`.
 
-## Jenkins Deployment
+## 🚀 Production Deployment
 
 Production deployment targets the existing `k3s` host to avoid additional OCI compute and block-storage costs. Backstage runs as a resource-limited Compose stack on that host; Jenkins remains on `platform`, and the Cloudflare connector remains on `web-01`.
 
 After the Vault data and a published release tag are ready, use this order:
 
-1. Run `backstage-platform/validate/main` and require success.
+1. Require `01 - Validate Backstage Platform` to pass.
 2. Update `bharath-oci-host-config/environments/prd/backstage.json` to the published `automation_ref` through repository review.
-3. Run `bharath-oci-host-config/validate/main` and require success.
-4. Run `bharath-oci-host-config/configure-backstage` with `ACTION=deploy`.
+3. Require `01 - Validate OCI Host Configuration` to pass.
+4. Run `08 - Configure Production Backstage` with `action=deploy`.
 
 The deployment pipeline performs remote `validate` and `dry-run` stages before `deploy`, then verifies the protected public route. Do not run `configure-backstage` while the configuration is disabled or redirect it to the Jenkins controller.
 
