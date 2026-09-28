@@ -1,0 +1,40 @@
+#==============================================================================
+# BACKSTAGE REPOSITORY VALIDATION
+#==============================================================================
+
+name: 01 - Validate Backstage Platform
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+#==============================================================================
+# WORKFLOW PERMISSIONS AND CONCURRENCY
+#==============================================================================
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backstage-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+#==============================================================================
+# VALIDATION JOB
+#==============================================================================
+
+jobs:
+  validate:
+    name: 01 - Validate Backstage Platform
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: 01 - Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: 02 - Validate Backstage Platform
+        run: bash scripts/validate-ci.sh
