@@ -1,6 +1,6 @@
 # BharathCoudOps Developer Portal
 
-Backstage developer portal for the BharathCoudOps platform catalog, software templates, Jenkins visibility, Cloudflare Access protection, guest identity, and OCI-hosted production operations.
+Backstage developer portal for the BharathCoudOps platform catalog, software templates, GitHub Actions visibility, Cloudflare Access protection, guest identity, and OCI-hosted production operations.
 
 ## Supported Versions
 
@@ -13,7 +13,6 @@ Backstage developer portal for the BharathCoudOps platform catalog, software tem
 | PostgreSQL             | `17.11-bookworm`                           |
 | PostgreSQL exporter    | `0.20.1`                                   |
 | Node exporter          | `1.12.1`                                   |
-| Jenkins shared library | `1.4.1`                                    |
 
 Backstage package versions are managed as a release set. Use `yarn backstage-cli versions:bump --release <version>` for future Backstage upgrades; do not upgrade React, React Router, TypeScript, or native database packages independently of Backstage compatibility.
 
@@ -31,14 +30,13 @@ The frontend is available at `http://localhost:3000` and the backend at `http://
 
 ## Production Configuration
 
-The production container loads [app-config.yaml](app-config.yaml) followed by [app-config.production.yaml](app-config.production.yaml). The production file overrides public URLs, PostgreSQL, Cloudflare-protected guest authentication, and Jenkins. Cloudflare Access must authenticate every request before it reaches Backstage because the production guest provider does not perform identity verification itself.
+The production container loads [app-config.yaml](app-config.yaml) followed by [app-config.production.yaml](app-config.production.yaml). The production file overrides public URLs, PostgreSQL, and Cloudflare-protected guest authentication. Cloudflare Access must authenticate every request before it reaches Backstage because the production guest provider does not perform identity verification itself.
 
 | Variable                 | Default                           | Description                                               |
 | ------------------------ | --------------------------------- | --------------------------------------------------------- |
 | `BACKSTAGE_BASE_URL`     | Required                          | Public HTTPS URL used by the frontend, backend, and CORS  |
 | `BACKSTAGE_BIND_ADDRESS` | Required                          | Private host address used for published Compose ports     |
 | `BACKSTAGE_VERSION`      | Required                          | Immutable application image tag, normally the release tag |
-| `JENKINS_BASE_URL`       | Required                          | Public Jenkins URL for the `platform` instance            |
 | `POSTGRES_HOST`          | `postgres`                        | Compose PostgreSQL service name                           |
 | `POSTGRES_PORT`          | `5432`                            | PostgreSQL service port                                   |
 | `POSTGRES_USER`          | `backstage`                       | PostgreSQL role                                           |
@@ -53,13 +51,11 @@ Deployment reads one JSON object from OCI Vault and writes each value to a root-
 | ------------------- | -------------------------- | ------------------------------------------------------------------------------ |
 | `backend_secret`    | `BACKSTAGE_BACKEND_SECRET` | Backstage service-to-service signing secret; use at least 32 random characters |
 | `github_token`      | `GITHUB_TOKEN`             | GitHub catalog and scaffolder integration token                                |
-| `jenkins_api_token` | `JENKINS_API_TOKEN`        | Jenkins API token                                                              |
-| `jenkins_username`  | `JENKINS_USERNAME`         | Jenkins service account                                                        |
 | `postgres_password` | `POSTGRES_PASSWORD`        | PostgreSQL password; use at least 16 random characters                         |
 
 ## ✅ Validation
 
-Run the same checks used by Jenkins from the repository root:
+Run the same checks used by GitHub Actions from the repository root:
 
 ```bash
 bash scripts/validate.sh
@@ -106,7 +102,7 @@ Backups are retained for seven days and match `/var/backups/backstage-platform/b
 
 ## 🚀 Production Deployment
 
-Production deployment targets the existing `k3s` host to avoid additional OCI compute and block-storage costs. Backstage runs as a resource-limited Compose stack on that host; Jenkins remains on `platform`, and the Cloudflare connector remains on `web-01`.
+Production deployment targets the existing `k3s` host to avoid additional OCI compute and block-storage costs. Backstage runs as a resource-limited Compose stack on that host, and the Cloudflare connector remains on `web-01`.
 
 After the Vault data and a published release tag are ready, use this order:
 
@@ -115,7 +111,7 @@ After the Vault data and a published release tag are ready, use this order:
 3. Require `01 - Validate OCI Host Configuration` to pass.
 4. Run `08 - Configure Production Backstage` with `action=deploy`.
 
-The deployment pipeline performs remote `validate` and `dry-run` stages before `deploy`, then verifies the protected public route. Do not run `configure-backstage` while the configuration is disabled or redirect it to the Jenkins controller.
+The deployment pipeline performs remote `validate` and `dry-run` stages before `deploy`, then verifies the protected public route.
 
 ## Repository Layout
 
@@ -126,4 +122,3 @@ The deployment pipeline performs remote `validate` and `dry-run` stages before `
 | `catalog`          | BharathCoudOps domains, systems, components, groups, and resources                 |
 | `templates`        | Repository-reviewed sandbox request workflows                                      |
 | `scripts`          | Validation, Docker installation, release deployment, backup, restore, and rollback |
-| `.jenkins`         | Repository validation pipeline                                                     |

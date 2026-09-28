@@ -63,7 +63,7 @@ spec:
         repoUrl: ${{ parameters.repository }}
         branchName: backstage/extend-${{ parameters.sandbox }}
         title: 'chore: extend sandbox ${{ parameters.sandbox }}'
-        description: 'Backstage lease extension requiring repository approval and Jenkins validation.'
+        description: 'Backstage lease extension requiring repository approval and GitHub Actions validation.'
         targetPath: backstage/requests/extensions/${{ parameters.sandbox }}
 
   #============================================================================

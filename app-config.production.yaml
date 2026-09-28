@@ -56,18 +56,6 @@ auth:
     guest:
       dangerouslyAllowOutsideDevelopment: true
 
-#==============================================================================
-# JENKINS INTEGRATION
-#==============================================================================
-
-jenkins:
-  instances:
-    - name: platform
-      baseUrl: ${JENKINS_BASE_URL}
-      username: ${JENKINS_USERNAME}
-      apiKey: ${JENKINS_API_TOKEN}
-      projectCountLimit: 200
-
   #==============================================================================
   # PRODUCTION CATALOG LOCATIONS
   #==============================================================================

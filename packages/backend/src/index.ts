@@ -71,12 +71,6 @@ backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 
 //==============================================================================
-// JENKINS PLUGIN
-//==============================================================================
-
-backend.add(import('@backstage-community/plugin-jenkins-backend'));
-
-//==============================================================================
 // USER SETTINGS PLUGIN
 //==============================================================================
 

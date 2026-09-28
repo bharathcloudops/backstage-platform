@@ -23,7 +23,7 @@ The backend listens on `http://localhost:7007`, uses guest authentication, and s
 | Delivery    | Scaffolder, GitHub publish actions, notifications                               |
 | Content     | TechDocs                                                                        |
 | Discovery   | PostgreSQL search engine, catalog and TechDocs collators                        |
-| Operations  | Jenkins and Kubernetes                                                          |
+| Operations  | Kubernetes                                                                      |
 | Platform    | Permissions, user settings, notifications, signals, MCP Actions                 |
 
 ## Production Image

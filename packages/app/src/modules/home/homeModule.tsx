@@ -17,7 +17,7 @@ const content = `
 - [Environment inventory](/environments)
 - [Expiring sandboxes](/sandboxes)
 - [Pending approvals](/approvals)
-- [Jenkins operations](/operations)
+- [GitHub Actions](https://github.com/orgs/bharathcloudops/actions)
 - [Software catalog](/catalog)
 - [Create](/create)
 `;

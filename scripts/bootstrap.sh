@@ -19,9 +19,8 @@ repository="${2:-}"
 release="${3:-}"
 base_url="${4:-http://localhost:7007}"
 bind_address="${5:-127.0.0.1}"
-jenkins_url="${6:-http://localhost:8080}"
-restore_archive="${7:-}"
-secret_bundle="${8:-}"
+restore_archive="${6:-}"
+secret_bundle="${7:-}"
 
 #==============================================================================
 # INPUT VALIDATION
@@ -58,7 +57,6 @@ run_environment=(
   "AUTOMATION_REF=$release"
   "BACKSTAGE_BASE_URL=$base_url"
   "BACKSTAGE_BIND_ADDRESS=$bind_address"
-  "JENKINS_BASE_URL=$jenkins_url"
   "BACKSTAGE_RESTORE_ARCHIVE=$restore_archive"
 )
 

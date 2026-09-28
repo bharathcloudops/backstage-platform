@@ -10,7 +10,6 @@ metadata:
   description: Internal developer portal for BharathCoudOps platform operations.
   annotations:
     github.com/project-slug: bharathadigopula/backstage-platform
-    jenkins.io/job-full-name: platform:backstage-platform/validate/main
 spec:
   type: website
   owner: group:default/platform-engineering

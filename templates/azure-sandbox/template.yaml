@@ -81,7 +81,7 @@ spec:
         repoUrl: ${{ parameters.repository }}
         branchName: backstage/sandbox-${{ parameters.name }}
         title: 'feat: request Azure sandbox ${{ parameters.name }}'
-        description: 'Backstage sandbox request requiring repository approval and Jenkins validation.'
+        description: 'Backstage sandbox request requiring repository approval and GitHub Actions validation.'
         targetPath: backstage/requests/sandboxes/${{ parameters.name }}
 
   #============================================================================
