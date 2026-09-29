@@ -77,7 +77,9 @@ fi
 if grep -Fq "\$VERSION_CODENAME" "$repository_root/scripts/install-docker.sh" || \
   ! grep -Fq "\"\$distribution_codename\"" "$repository_root/scripts/install-docker.sh" || \
   ! grep -Fq 'DPkg::Lock::Timeout=300' "$repository_root/scripts/install-docker.sh" || \
-  ! grep -Fq -- '--allow-downgrades' "$repository_root/scripts/install-docker.sh"; then
+  ! grep -Fq -- '--allow-downgrades' "$repository_root/scripts/install-docker.sh" || \
+  ! grep -Fq "dpkg-query --show --showformat='\${Version}' docker-ce" "$repository_root/scripts/install-docker.sh" || \
+  ! grep -Fq "printf 'docker_install=unchanged" "$repository_root/scripts/install-docker.sh"; then
   printf 'Docker installation must use the validated distribution codename and allow pinned downgrades.\n' >&2
   exit 1
 fi
@@ -92,12 +94,14 @@ if ! grep -Fq 'compose build --pull --progress plain' "$repository_root/scripts/
   ! grep -Fq 'docker image prune --all --force' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'docker system df' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'prune_releases' "$repository_root/scripts/manage.sh" || \
+  ! grep -Fq 'deployment.sha256' "$repository_root/scripts/manage.sh" || \
+  ! grep -Fq "printf 'backstage_deploy=unchanged" "$repository_root/scripts/manage.sh" || \
   ! grep -Fq "status) verify_stack; printf 'backstage_status=ready\\n'; compose ps --services --status running ;;" "$repository_root/scripts/manage.sh"; then
   printf 'Backstage lifecycle must bound disk usage and retain required markers within the OCI response limit.\n' >&2
   exit 1
 fi
 
-deploy_marker_line=$(grep -nF "printf 'backstage_deploy=ready\n'" "$repository_root/scripts/manage.sh" | cut -d: -f1)
+deploy_marker_line=$(grep -nF "printf 'backstage_deploy=ready\n'" "$repository_root/scripts/manage.sh" | head -n 1 | cut -d: -f1)
 deploy_build_line=$(grep -nF '  compose build --pull --progress plain' "$repository_root/scripts/manage.sh" | cut -d: -f1)
 if [[ -z "$deploy_marker_line" || -z "$deploy_build_line" ]] || (( deploy_marker_line >= deploy_build_line )); then
   printf 'Backstage deploy marker must precede the image build for OCI output capture.\n' >&2

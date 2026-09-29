@@ -32,6 +32,19 @@ if [[ "$action" == "validate" ]]; then printf 'docker_install_validation=ready\n
 if [[ "$action" == "dry-run" ]]; then printf 'docker_install_dry_run=ready\n'; exit 0; fi
 (( EUID == 0 )) || { printf 'Root is required.\n' >&2; exit 1; }
 
+if [[ "$(dpkg-query --show --showformat='${Version}' docker-ce 2>/dev/null || true)" == "$engine_version" &&
+  "$(dpkg-query --show --showformat='${Version}' docker-ce-cli 2>/dev/null || true)" == "$engine_version" &&
+  "$(dpkg-query --show --showformat='${Version}' containerd.io 2>/dev/null || true)" == "$containerd_version" &&
+  "$(dpkg-query --show --showformat='${Version}' docker-buildx-plugin 2>/dev/null || true)" == "$buildx_version" &&
+  "$(dpkg-query --show --showformat='${Version}' docker-compose-plugin 2>/dev/null || true)" == "$compose_version" &&
+  systemctl is-active --quiet docker ]]; then
+  docker version >/dev/null
+  docker compose version >/dev/null
+  printf 'docker_install=unchanged\n'
+  printf 'docker_install=ready\n'
+  exit 0
+fi
+
 #==============================================================================
 # DOCKER PACKAGE REPOSITORY
 #==============================================================================
