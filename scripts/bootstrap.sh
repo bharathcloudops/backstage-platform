@@ -45,6 +45,7 @@ fi
 
 if [[ "$action" == "deploy" ]] && command -v docker >/dev/null; then
   sudo -n docker builder prune --all --force >/dev/null
+  sudo -n docker image prune --all --force >/dev/null
 fi
 temporary_root=$(mktemp -d)
 trap 'rm -rf "$temporary_root"' EXIT
