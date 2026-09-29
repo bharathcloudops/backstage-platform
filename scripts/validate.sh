@@ -76,6 +76,7 @@ fi
 
 if grep -Fq "\$VERSION_CODENAME" "$repository_root/scripts/install-docker.sh" || \
   ! grep -Fq "\"\$distribution_codename\"" "$repository_root/scripts/install-docker.sh" || \
+  ! grep -Fq 'DPkg::Lock::Timeout=300' "$repository_root/scripts/install-docker.sh" || \
   ! grep -Fq -- '--allow-downgrades' "$repository_root/scripts/install-docker.sh"; then
   printf 'Docker installation must use the validated distribution codename and allow pinned downgrades.\n' >&2
   exit 1

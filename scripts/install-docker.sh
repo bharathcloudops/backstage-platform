@@ -46,8 +46,9 @@ printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.do
 # PINNED PACKAGE INSTALLATION
 #==============================================================================
 
-apt-get update >/dev/null
-DEBIAN_FRONTEND=noninteractive apt-get install --yes --quiet --allow-downgrades \
+apt_get_options=(-o DPkg::Lock::Timeout=300)
+apt-get "${apt_get_options[@]}" update >/dev/null
+DEBIAN_FRONTEND=noninteractive apt-get "${apt_get_options[@]}" install --yes --quiet --allow-downgrades \
   "docker-ce=$engine_version" "docker-ce-cli=$engine_version" \
   "containerd.io=$containerd_version" "docker-buildx-plugin=$buildx_version" \
   "docker-compose-plugin=$compose_version" >/dev/null
