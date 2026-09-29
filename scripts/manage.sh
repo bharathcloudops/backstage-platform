@@ -91,6 +91,9 @@ verify_stack() {
 #==============================================================================
 
 deploy_stack() {
+  local build_exit
+  local build_log
+
   (( EUID == 0 )) || { printf 'Deploy requires root.\n' >&2; exit 1; }
   if ! jq -e '
     type == "object" and
@@ -129,7 +132,15 @@ EOF
   printf 'backstage_deploy=ready\n'
   df --human-readable "$install_root" /var/lib/docker
   docker system df
-  compose build --pull --quiet
+  build_log=$(mktemp)
+  if compose build --pull --progress plain > "$build_log" 2>&1; then
+    rm -f "$build_log"
+  else
+    build_exit=$?
+    tail -n 40 "$build_log" >&2
+    rm -f "$build_log"
+    return "$build_exit"
+  fi
   docker builder prune --all --force >/dev/null
   compose up --detach --remove-orphans
   docker image prune --all --force >/dev/null
