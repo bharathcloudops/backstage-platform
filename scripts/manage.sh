@@ -143,8 +143,8 @@ EOF
     return "$build_exit"
   fi
   rm -f "$build_log"
-  docker builder prune --all --force >/dev/null
   compose up --detach --remove-orphans
+  docker builder prune --force --filter until=168h >/dev/null
   docker image prune --all --force >/dev/null
   systemctl start backstage-platform-backup.service
   systemctl enable --now backstage-platform-backup.timer
