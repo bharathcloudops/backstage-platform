@@ -83,7 +83,10 @@ fi
 
 if ! grep -Fq 'compose build --pull --quiet' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
+  ! grep -Fq 'docker image prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
   ! grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/manage.sh" || \
+  ! grep -Fq 'docker image prune --all --force' "$repository_root/scripts/manage.sh" || \
+  ! grep -Fq 'docker system df' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'prune_releases' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq "status) verify_stack; printf 'backstage_status=ready\\n'; compose ps --services --status running ;;" "$repository_root/scripts/manage.sh"; then
   printf 'Backstage lifecycle must bound disk usage and retain required markers within the OCI response limit.\n' >&2

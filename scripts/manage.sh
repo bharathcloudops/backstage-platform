@@ -127,9 +127,12 @@ EOF
   install -m 0644 "$release_path/systemd/backstage-platform-backup.timer" /etc/systemd/system/backstage-platform-backup.timer
   systemctl daemon-reload
   printf 'backstage_deploy=ready\n'
+  df --human-readable "$install_root" /var/lib/docker
+  docker system df
   compose build --pull --quiet
   docker builder prune --all --force >/dev/null
   compose up --detach --remove-orphans
+  docker image prune --all --force >/dev/null
   systemctl start backstage-platform-backup.service
   systemctl enable --now backstage-platform-backup.timer
   verify_stack
