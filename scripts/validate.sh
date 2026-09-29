@@ -85,9 +85,9 @@ fi
 if ! grep -Fq 'compose build --pull --progress plain' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'build_exit=$?' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq "tail -n 40 \"\$build_log\"" "$repository_root/scripts/manage.sh" || \
-  ! grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
-  ! grep -Fq 'docker image prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
-  ! grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/manage.sh" || \
+  grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
+  grep -Fq 'docker image prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
+  ! grep -Fq 'docker builder prune --force --filter until=168h' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'docker image prune --all --force' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'docker system df' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'prune_releases' "$repository_root/scripts/manage.sh" || \
