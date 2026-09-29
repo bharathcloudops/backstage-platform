@@ -69,14 +69,18 @@ write_secret() {
 # STACK VERIFICATION
 #==============================================================================
 
+stack_ready() {
+  curl --fail --silent --show-error "http://${BACKSTAGE_BIND_ADDRESS:-127.0.0.1}:7007/.backstage/health/v1/readiness" >/dev/null 2>&1 &&
+    compose ps --status running >/dev/null &&
+    systemctl is-enabled --quiet backstage-platform-backup.timer &&
+    systemctl is-active --quiet backstage-platform-backup.timer &&
+    curl --fail --silent --show-error "http://${BACKSTAGE_BIND_ADDRESS:-127.0.0.1}:9101/metrics" | \
+      grep -Fq 'backstage_backup_last_success_timestamp_seconds'
+}
+
 verify_stack() {
   for (( attempt = 1; attempt <= 60; attempt++ )); do
-    if curl --fail --silent --show-error "http://${BACKSTAGE_BIND_ADDRESS:-127.0.0.1}:7007/.backstage/health/v1/readiness" >/dev/null 2>&1; then
-      compose ps --status running >/dev/null
-      systemctl is-enabled --quiet backstage-platform-backup.timer
-      systemctl is-active --quiet backstage-platform-backup.timer
-      curl --fail --silent --show-error "http://${BACKSTAGE_BIND_ADDRESS:-127.0.0.1}:9101/metrics" | \
-        grep -Fq 'backstage_backup_last_success_timestamp_seconds'
+    if stack_ready; then
       printf 'backstage_verify=ready\n'
       return 0
     fi
@@ -93,6 +97,8 @@ verify_stack() {
 deploy_stack() {
   local build_exit
   local build_log
+  local deployment_fingerprint
+  local fingerprint_file="$install_root/deployment.sha256"
 
   (( EUID == 0 )) || { printf 'Deploy requires root.\n' >&2; exit 1; }
   if ! jq -e '
@@ -108,6 +114,13 @@ deploy_stack() {
     exit 1
   fi
   validate_stack
+  deployment_fingerprint=$(printf '%s\0' "$release_ref" "${BACKSTAGE_BASE_URL:-}" "${BACKSTAGE_BIND_ADDRESS:-}" "$secret_bundle" | sha256sum | awk '{print $1}')
+  if [[ -f "$fingerprint_file" && "$(<"$fingerprint_file")" == "$deployment_fingerprint" && -L "$install_root/current" ]] && stack_ready; then
+    printf 'backstage_verify=ready\n'
+    printf 'backstage_deploy=unchanged\n'
+    printf 'backstage_deploy=ready\n'
+    return 0
+  fi
   install -d -m 0755 "$install_root/releases"
   install -d -m 0755 "$backup_root/metrics"
   rm -rf "$release_path"
@@ -138,7 +151,7 @@ EOF
   build_exit=$?
   set -e
   if (( build_exit != 0 )); then
-    tail -n 40 "$build_log" >&2
+    tail -n 40 "$build_log"
     rm -f "$build_log"
     return "$build_exit"
   fi
@@ -149,6 +162,9 @@ EOF
   systemctl start backstage-platform-backup.service
   systemctl enable --now backstage-platform-backup.timer
   verify_stack
+  printf '%s\n' "$deployment_fingerprint" > "$fingerprint_file.partial"
+  chmod 0600 "$fingerprint_file.partial"
+  mv "$fingerprint_file.partial" "$fingerprint_file"
 }
 
 #==============================================================================
