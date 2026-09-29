@@ -75,8 +75,9 @@ if docker compose version >/dev/null 2>&1; then
 fi
 
 if grep -Fq "\$VERSION_CODENAME" "$repository_root/scripts/install-docker.sh" || \
-  ! grep -Fq "\"\$distribution_codename\"" "$repository_root/scripts/install-docker.sh"; then
-  printf 'Docker repository setup must use the validated distribution codename.\n' >&2
+  ! grep -Fq "\"\$distribution_codename\"" "$repository_root/scripts/install-docker.sh" || \
+  ! grep -Fq -- '--allow-downgrades' "$repository_root/scripts/install-docker.sh"; then
+  printf 'Docker installation must use the validated distribution codename and allow pinned downgrades.\n' >&2
   exit 1
 fi
 
