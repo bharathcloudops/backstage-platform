@@ -138,7 +138,7 @@ EOF
   build_exit=$?
   set -e
   if (( build_exit != 0 )); then
-    tail -n 40 "$build_log" >&2
+    tail -n 40 "$build_log"
     rm -f "$build_log"
     return "$build_exit"
   fi
