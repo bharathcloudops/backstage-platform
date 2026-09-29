@@ -43,6 +43,9 @@ fi
 # RELEASE ACQUISITION
 #==============================================================================
 
+if [[ "$action" == "deploy" ]] && command -v docker >/dev/null; then
+  sudo -n docker builder prune --all --force >/dev/null
+fi
 temporary_root=$(mktemp -d)
 trap 'rm -rf "$temporary_root"' EXIT
 curl --fail --location --silent --show-error "https://github.com/$repository/archive/refs/tags/$release.tar.gz" --output "$temporary_root/source.tar.gz"

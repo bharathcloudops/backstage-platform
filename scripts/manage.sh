@@ -30,6 +30,21 @@ compose() {
   docker compose --project-directory "$install_root/current" --file "$install_root/current/compose.yaml" "$@"
 }
 
+prune_releases() {
+  local candidate_release
+  local current_release
+  local previous_release
+
+  current_release=$(readlink -f "$install_root/current")
+  previous_release=$(readlink -f "$install_root/previous" 2>/dev/null || true)
+  while IFS= read -r -d '' candidate_release; do
+    candidate_release=$(readlink -f "$candidate_release")
+    if [[ "$candidate_release" != "$current_release" && "$candidate_release" != "$previous_release" ]]; then
+      rm -rf "$candidate_release"
+    fi
+  done < <(find "$install_root/releases" -mindepth 1 -maxdepth 1 -type d -print0)
+}
+
 #==============================================================================
 # STACK VALIDATION
 #==============================================================================
@@ -107,11 +122,13 @@ EOF
   chmod 0600 "$release_path/.env"
   if [[ -L "$install_root/current" ]]; then ln -sfn "$(readlink -f "$install_root/current")" "$install_root/previous"; fi
   ln -sfn "$release_path" "$install_root/current"
+  prune_releases
   install -m 0644 "$release_path/systemd/backstage-platform-backup.service" /etc/systemd/system/backstage-platform-backup.service
   install -m 0644 "$release_path/systemd/backstage-platform-backup.timer" /etc/systemd/system/backstage-platform-backup.timer
   systemctl daemon-reload
   printf 'backstage_deploy=ready\n'
   compose build --pull --quiet
+  docker builder prune --all --force >/dev/null
   compose up --detach --remove-orphans
   systemctl start backstage-platform-backup.service
   systemctl enable --now backstage-platform-backup.timer
