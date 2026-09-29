@@ -82,7 +82,8 @@ if grep -Fq "\$VERSION_CODENAME" "$repository_root/scripts/install-docker.sh" ||
   exit 1
 fi
 
-if ! grep -Fq 'compose build --pull --quiet' "$repository_root/scripts/manage.sh" || \
+if ! grep -Fq 'compose build --pull --progress plain' "$repository_root/scripts/manage.sh" || \
+  ! grep -Fq 'tail -n 40 "$build_log"' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
   ! grep -Fq 'docker image prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
   ! grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/manage.sh" || \
