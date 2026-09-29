@@ -133,14 +133,16 @@ EOF
   df --human-readable "$install_root" /var/lib/docker
   docker system df
   build_log=$(mktemp)
-  if compose build --pull --progress plain > "$build_log" 2>&1; then
-    rm -f "$build_log"
-  else
-    build_exit=$?
+  set +e
+  compose build --pull --progress plain > "$build_log" 2>&1
+  build_exit=$?
+  set -e
+  if (( build_exit != 0 )); then
     tail -n 40 "$build_log" >&2
     rm -f "$build_log"
     return "$build_exit"
   fi
+  rm -f "$build_log"
   docker builder prune --all --force >/dev/null
   compose up --detach --remove-orphans
   docker image prune --all --force >/dev/null
