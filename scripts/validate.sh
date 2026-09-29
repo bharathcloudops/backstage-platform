@@ -83,6 +83,7 @@ if grep -Fq "\$VERSION_CODENAME" "$repository_root/scripts/install-docker.sh" ||
 fi
 
 if ! grep -Fq 'compose build --pull --progress plain' "$repository_root/scripts/manage.sh" || \
+  ! grep -Fq 'build_exit=$?' "$repository_root/scripts/manage.sh" || \
   ! grep -Fq "tail -n 40 \"\$build_log\"" "$repository_root/scripts/manage.sh" || \
   ! grep -Fq 'docker builder prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
   ! grep -Fq 'docker image prune --all --force' "$repository_root/scripts/bootstrap.sh" || \
@@ -96,7 +97,7 @@ if ! grep -Fq 'compose build --pull --progress plain' "$repository_root/scripts/
 fi
 
 deploy_marker_line=$(grep -nF "printf 'backstage_deploy=ready\n'" "$repository_root/scripts/manage.sh" | cut -d: -f1)
-deploy_build_line=$(grep -nF '  if compose build --pull --progress plain' "$repository_root/scripts/manage.sh" | cut -d: -f1)
+deploy_build_line=$(grep -nF '  compose build --pull --progress plain' "$repository_root/scripts/manage.sh" | cut -d: -f1)
 if [[ -z "$deploy_marker_line" || -z "$deploy_build_line" ]] || (( deploy_marker_line >= deploy_build_line )); then
   printf 'Backstage deploy marker must precede the image build for OCI output capture.\n' >&2
   exit 1
