@@ -56,10 +56,12 @@ fi
 # OCI PAYLOAD VALIDATION
 #==============================================================================
 
-sample_arguments=$(jq -cn --arg bundle "$sample_bundle" '["deploy","bharathcloudops/backstage-platform","v1.0.0","https://backstage.bharathcloudops.com","10.10.10.69","",$bundle]')
+sample_arguments=$(jq -cn --arg bundle "$sample_bundle" '["deploy","bharathcloudops/backstage-platform","v1.0.0","https://backstage.bharathcloudops.com","10.10.10.69",$bundle]')
 argument_line=$(jq -r '[.[] | @sh] | "set -- " + join(" ")' <<< "$sample_arguments")
 rendered_size=$(printf '%s\n%s' "$argument_line" "$(cat "$repository_root/scripts/bootstrap.sh")" | wc -c | tr -d ' ')
 (( rendered_size <= 4096 )) || { printf 'Rendered bootstrap exceeds 4096 bytes.\n' >&2; exit 1; }
+bundle_position=$(jq -r 'length' <<< "$sample_arguments")
+grep -Fq "secret_bundle=\"\${${bundle_position}:-}\"" "$repository_root/scripts/bootstrap.sh" || { printf 'The bootstrap must read the secret bundle from the final argument position.\n' >&2; exit 1; }
 
 #==============================================================================
 # DOCKER COMPOSE VALIDATION
