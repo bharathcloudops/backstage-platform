@@ -122,31 +122,6 @@ services:
       - no-new-privileges:true
     user: '1000:1000'
 
-  #============================================================================
-  # BACKUP METRICS EXPORTER
-  #============================================================================
-
-  backup-exporter:
-    image: prom/node-exporter:v1.12.1
-    command:
-      - --collector.disable-defaults
-      - --collector.textfile
-      - --collector.textfile.directory=/textfile
-      - --web.listen-address=:9101
-    deploy:
-      resources:
-        limits:
-          cpus: '0.05'
-          memory: 64M
-    ports:
-      - ${BACKSTAGE_BIND_ADDRESS:?BACKSTAGE_BIND_ADDRESS is required}:9101:9101
-    read_only: true
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    volumes:
-      - ${BACKSTAGE_BACKUP_ROOT:-/var/backups/backstage-platform}/metrics:/textfile:ro
-
 #==============================================================================
 # RUNTIME SECRET FILES
 #==============================================================================

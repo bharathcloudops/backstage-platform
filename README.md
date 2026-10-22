@@ -41,7 +41,6 @@ The production container loads [app-config.yaml](app-config.yaml) followed by [a
 | `POSTGRES_PORT`          | `5432`                            | PostgreSQL service port                                   |
 | `POSTGRES_USER`          | `backstage`                       | PostgreSQL role                                           |
 | `BACKSTAGE_INSTALL_ROOT` | `/opt/backstage-platform`         | Versioned release installation root                       |
-| `BACKSTAGE_BACKUP_ROOT`  | `/var/backups/backstage-platform` | Database backup and metrics root                          |
 
 ## Secret Bundle
 
@@ -79,7 +78,6 @@ cannot access the private OCI host.
 | Backstage               | `7007`         | PostgreSQL                         |
 | PostgreSQL              | Internal only  | `postgres-data` volume             |
 | PostgreSQL exporter     | `9187`         | None                               |
-| Backup metrics exporter | `9101`         | Read-only backup metrics directory |
 
 All published ports bind to `BACKSTAGE_BIND_ADDRESS`. Public access must pass through the managed Cloudflare route; the containers do not publish directly on every host interface.
 
@@ -94,11 +92,9 @@ All published ports bind to `BACKSTAGE_BIND_ADDRESS`. Public access must pass th
 | `deploy`   | Installs pinned Docker packages, creates a versioned release, builds the image, starts the stack, and verifies readiness |
 | `verify`   | Checks container state and Backstage readiness                                                                           |
 | `status`   | Prints Compose status and verifies readiness                                                                             |
-| `backup`   | Creates a compressed PostgreSQL dump and updates Prometheus textfile metrics                                             |
-| `restore`  | Restores a managed backup path and verifies readiness                                                                    |
 | `rollback` | Swaps the current and previous release links and verifies readiness                                                      |
 
-Backups are retained for seven days and match `/var/backups/backstage-platform/backstage-YYYYMMDDTHHMMSSZ.sql.gz`.
+Backstage keeps its data in the `backstage_plugin_*` PostgreSQL databases. Scheduled backups are handled by `bharath-backup-backstage.timer`, deployed by `11 - Configure production backups` in `bharath-oci-host-config`, which stores an encrypted `pg_dumpall` of every database in OCI Object Storage. Deploying this release removes the retired local backup timer, the empty-database dump it produced, and the backup metrics exporter.
 
 ## 🚀 Production Deployment
 
@@ -121,4 +117,4 @@ The deployment pipeline performs remote `validate` and `dry-run` stages before `
 | `packages/backend` | Backstage backend plugins and production image                                     |
 | `catalog`          | BharathCoudOps domains, systems, components, groups, and resources                 |
 | `templates`        | Repository-reviewed sandbox request workflows                                      |
-| `scripts`          | Validation, Docker installation, release deployment, backup, restore, and rollback |
+| `scripts`          | Validation, Docker installation, release deployment, and rollback |

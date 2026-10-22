@@ -20,7 +20,6 @@ source_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 install_root="${BACKSTAGE_INSTALL_ROOT:-/opt/backstage-platform}"
 release_ref="${AUTOMATION_REF:-local}"
 release_path="$install_root/releases/${release_ref//[^a-zA-Z0-9._-]/-}"
-backup_root="${BACKSTAGE_BACKUP_ROOT:-/var/backups/backstage-platform}"
 
 #==============================================================================
 # DOCKER COMPOSE WRAPPER
@@ -71,11 +70,7 @@ write_secret() {
 
 stack_ready() {
   curl --fail --silent --show-error "http://${BACKSTAGE_BIND_ADDRESS:-127.0.0.1}:7007/.backstage/health/v1/readiness" >/dev/null 2>&1 &&
-    compose ps --status running >/dev/null &&
-    systemctl is-enabled --quiet backstage-platform-backup.timer &&
-    systemctl is-active --quiet backstage-platform-backup.timer &&
-    curl --fail --silent --show-error "http://${BACKSTAGE_BIND_ADDRESS:-127.0.0.1}:9101/metrics" | \
-      grep -Fq 'backstage_backup_last_success_timestamp_seconds'
+    compose ps --status running >/dev/null
 }
 
 verify_stack() {
@@ -122,7 +117,6 @@ deploy_stack() {
     return 0
   fi
   install -d -m 0755 "$install_root/releases"
-  install -d -m 0755 "$backup_root/metrics"
   rm -rf "$release_path"
   install -d -m 0755 "$release_path"
   cp -a "$source_root/." "$release_path/"
@@ -139,8 +133,8 @@ EOF
   if [[ -L "$install_root/current" ]]; then ln -sfn "$(readlink -f "$install_root/current")" "$install_root/previous"; fi
   ln -sfn "$release_path" "$install_root/current"
   prune_releases
-  install -m 0644 "$release_path/systemd/backstage-platform-backup.service" /etc/systemd/system/backstage-platform-backup.service
-  install -m 0644 "$release_path/systemd/backstage-platform-backup.timer" /etc/systemd/system/backstage-platform-backup.timer
+  systemctl disable --now backstage-platform-backup.timer >/dev/null 2>&1 || true
+  rm -f /etc/systemd/system/backstage-platform-backup.service /etc/systemd/system/backstage-platform-backup.timer
   systemctl daemon-reload
   printf 'backstage_deploy=ready\n'
   df --human-readable "$install_root" /var/lib/docker
@@ -159,50 +153,10 @@ EOF
   compose up --detach --remove-orphans
   docker builder prune --force --filter until=168h >/dev/null
   docker image prune --all --force >/dev/null
-  systemctl start backstage-platform-backup.service
-  systemctl enable --now backstage-platform-backup.timer
   verify_stack
   printf '%s\n' "$deployment_fingerprint" > "$fingerprint_file.partial"
   chmod 0600 "$fingerprint_file.partial"
   mv "$fingerprint_file.partial" "$fingerprint_file"
-}
-
-#==============================================================================
-# DATABASE BACKUP
-#==============================================================================
-
-backup_stack() {
-  (( EUID == 0 )) || { printf 'Backup requires root.\n' >&2; exit 1; }
-  install -d -m 0700 "$backup_root"
-  archive="$backup_root/backstage-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
-  compose exec -T postgres pg_dump --username backstage backstage | gzip > "$archive.partial"
-  mv "$archive.partial" "$archive"
-  chmod 0600 "$archive"
-  find "$backup_root" -type f -name 'backstage-*.sql.gz' -mtime +7 -delete
-  metrics_file="$backup_root/metrics/backstage-backup.prom"
-  {
-    printf '# TYPE backstage_backup_last_success_timestamp_seconds gauge\n'
-    printf 'backstage_backup_last_success_timestamp_seconds %s\n' "$(date -u +%s)"
-    printf '# TYPE backstage_backup_size_bytes gauge\n'
-    printf 'backstage_backup_size_bytes %s\n' "$(stat -c %s "$archive")"
-  } > "$metrics_file.partial"
-  mv "$metrics_file.partial" "$metrics_file"
-  chmod 0644 "$metrics_file"
-  printf 'backstage_backup=%s\n' "$archive"
-  printf 'backstage_backup=ready\n'
-}
-
-#==============================================================================
-# DATABASE RESTORE
-#==============================================================================
-
-restore_stack() {
-  (( EUID == 0 )) || { printf 'Restore requires root.\n' >&2; exit 1; }
-  archive="${BACKSTAGE_RESTORE_ARCHIVE:-}"
-  [[ "$archive" =~ ^/var/backups/backstage-platform/backstage-[0-9]{8}T[0-9]{6}Z\.sql\.gz$ && -f "$archive" ]] || { printf 'Invalid restore archive.\n' >&2; exit 1; }
-  gzip --decompress --stdout "$archive" | compose exec -T postgres psql --username backstage backstage
-  verify_stack
-  printf 'backstage_restore=ready\n'
 }
 
 #==============================================================================
@@ -231,8 +185,6 @@ case "$action" in
   deploy) deploy_stack ;;
   verify) verify_stack ;;
   status) verify_stack; printf 'backstage_status=ready\n'; compose ps --services --status running ;;
-  backup) backup_stack ;;
-  restore) restore_stack ;;
   rollback) rollback_stack ;;
   *) printf 'Invalid Backstage action.\n' >&2; exit 2 ;;
 esac
