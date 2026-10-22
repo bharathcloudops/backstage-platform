@@ -19,7 +19,7 @@ repository="${2:-}"
 release="${3:-}"
 base_url="${4:-http://localhost:7007}"
 bind_address="${5:-127.0.0.1}"
-secret_bundle="${7:-}"
+secret_bundle="${6:-}"
 
 #==============================================================================
 # INPUT VALIDATION
