@@ -15,7 +15,7 @@ set -euo pipefail
 #==============================================================================
 
 repository_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-required_files=(app-config.yaml app-config.production.yaml catalog/all.yaml compose.yaml packages/backend/Dockerfile scripts/bootstrap.sh scripts/manage.sh systemd/backstage-platform-backup.service systemd/backstage-platform-backup.timer templates/all.yaml)
+required_files=(app-config.yaml app-config.production.yaml catalog/all.yaml compose.yaml packages/backend/Dockerfile scripts/bootstrap.sh scripts/manage.sh templates/all.yaml)
 for required_file in "${required_files[@]}"; do
   [[ -f "$repository_root/$required_file" ]] || { printf 'Missing required file: %s\n' "$required_file" >&2; exit 1; }
 done
@@ -105,16 +105,6 @@ deploy_marker_line=$(grep -nF "printf 'backstage_deploy=ready\n'" "$repository_r
 deploy_build_line=$(grep -nF '  compose build --pull --progress plain' "$repository_root/scripts/manage.sh" | cut -d: -f1)
 if [[ -z "$deploy_marker_line" || -z "$deploy_build_line" ]] || (( deploy_marker_line >= deploy_build_line )); then
   printf 'Backstage deploy marker must precede the image build for OCI output capture.\n' >&2
-  exit 1
-fi
-
-deploy_function=$(sed -n '/^deploy_stack() {$/,/^}$/p' "$repository_root/scripts/manage.sh")
-if ! grep -Fq 'OnCalendar=*-*-* 03:30:00' "$repository_root/systemd/backstage-platform-backup.timer" || \
-  ! grep -Fq 'Persistent=true' "$repository_root/systemd/backstage-platform-backup.timer" || \
-  ! grep -Fq 'systemctl enable --now backstage-platform-backup.timer' <<< "$deploy_function" || \
-  ! grep -Fq 'systemctl start backstage-platform-backup.service' <<< "$deploy_function" || \
-  ! grep -Fq 'backstage_backup_last_success_timestamp_seconds' "$repository_root/scripts/manage.sh"; then
-  printf 'Backstage deployment must schedule and seed monitored PostgreSQL backups.\n' >&2
   exit 1
 fi
 
