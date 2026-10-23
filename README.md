@@ -77,6 +77,8 @@ Audit the locked dependency tree with:
 node .yarn/releases/yarn-4.13.0.cjs npm audit --all --recursive --severity high
 ```
 
+`02 - Audit Dependencies And Base Image` runs this audit daily at 03:53 UTC and on demand. It fails, and so raises the GitHub Actions failure alert, when a new critical advisory appears, reports high advisories without failing, and scans the `node` runtime base image with Trivy for fixable critical and high vulnerabilities. Accepted advisories are listed under `npmAuditIgnoreAdvisories` in `.yarnrc.yml` with the reason; the only entry is `tar` through `node-gyp`, which exists only while the image builds. Dependabot opens weekly pull requests for the base image and GitHub Actions. Because the image uses the floating `node:24-trixie-slim` tag, a Node.js security release reaches production only after the next `08 - Configure production Backstage` deploy.
+
 Re-resolve vulnerable packages to their newest in-range versions with `yarn up -R <package>`, which changes only `yarn.lock`. The October 2026 refresh moved the tree from 6 critical and 49 high advisories to 1 critical and 19 high. The remainder is mostly build-time tooling that is not part of the runtime image process: `tar` through `node-gyp`, `adm-zip` and `undici` through the module federation bundler plugin, and `braces` through `chokidar`. Runtime packages without an in-range fix, such as `node-forge`, `basic-ftp`, `js-yaml` through `swagger-ui-react`, and `@graphql-tools/utils`, are re-checked on each Backstage upgrade. The runtime image uses `node:24-trixie-slim`, which is pulled on every deploy so Node.js security releases are picked up by redeploying.
 
 ## Production Stack

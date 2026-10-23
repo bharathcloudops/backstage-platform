@@ -1,0 +1,30 @@
+#==============================================================================
+# DEPENDENCY UPDATES
+#==============================================================================
+
+version: 2
+
+#==============================================================================
+# CONTAINER BASE IMAGE AND GITHUB ACTION UPDATES
+#==============================================================================
+
+updates:
+  - package-ecosystem: docker
+    directory: /packages/backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    groups:
+      github-actions:
+        patterns:
+          - "*"

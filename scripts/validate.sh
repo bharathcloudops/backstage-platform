@@ -110,6 +110,13 @@ if [[ -z "$deploy_marker_line" || -z "$deploy_build_line" ]] || (( deploy_marker
   exit 1
 fi
 
+if ! grep -Fq 'cron: "53 3 * * *"' "$repository_root/.github/workflows/security-audit.yml" || \
+  ! grep -Fq 'npmAuditIgnoreAdvisories' "$repository_root/.yarnrc.yml" || \
+  ! grep -Fq 'package-ecosystem: docker' "$repository_root/.github/dependabot.yml"; then
+  printf 'The scheduled dependency audit, reviewed exceptions, and base image updates must be configured.\n' >&2
+  exit 1
+fi
+
 #==============================================================================
 # VALIDATION RESULT
 #==============================================================================

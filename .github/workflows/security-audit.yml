@@ -1,0 +1,70 @@
+#==============================================================================
+# DAILY DEPENDENCY AUDIT AND BASE IMAGE SCAN
+#==============================================================================
+
+name: 02 - Audit Dependencies And Base Image
+
+#==============================================================================
+# DAILY SCHEDULE AND MANUAL RUNS
+#==============================================================================
+
+on:
+  schedule:
+    - cron: "53 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backstage-security-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  #============================================================================
+  # NEW CRITICAL ADVISORIES IN THE LOCKED DEPENDENCY TREE
+  #============================================================================
+  audit:
+    name: 01 - Audit Locked Dependencies
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: 01 - Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: 02 - Fail On Critical Advisories
+        run: node .yarn/releases/yarn-4.13.0.cjs npm audit --all --recursive --severity critical
+
+      - name: 03 - Report High Advisories
+        continue-on-error: true
+        run: node .yarn/releases/yarn-4.13.0.cjs npm audit --all --recursive --severity high
+
+  #============================================================================
+  # FIXABLE CRITICAL AND HIGH VULNERABILITIES IN THE RUNTIME BASE IMAGE
+  #============================================================================
+  base-image:
+    name: 02 - Scan Node Base Image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: 01 - Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: 02 - Resolve Base Image
+        id: image
+        run: |
+          reference=$(sed -n 's/^FROM \(node:[^ ]*\) AS build$/\1/p' packages/backend/Dockerfile | head -n 1)
+          printf 'reference=%s\n' "$reference" >> "$GITHUB_OUTPUT"
+
+      - name: 03 - Scan Image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ steps.image.outputs.reference }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
