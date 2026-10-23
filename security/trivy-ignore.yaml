@@ -1,0 +1,20 @@
+#==============================================================================
+# REVIEWED TRIVY EXCEPTIONS FOR THE NODE RUNTIME BASE IMAGE
+#==============================================================================
+
+vulnerabilities:
+  - id: CVE-2026-102276
+    paths:
+      - "usr/local/lib/node_modules/npm/**"
+    statement: "Reviewed 2026-10-23. Package bundled inside the npm tool of the node base image. Backstage runs node directly on yarn-installed modules and never runs npm at runtime. Fixed by the next upstream node image rebuild, which a redeploy pulls."
+    expired_at: 2026-11-30
+  - id: CVE-2026-102278
+    paths:
+      - "usr/local/lib/node_modules/npm/**"
+    statement: "Reviewed 2026-10-23. Package bundled inside the npm tool of the node base image. Backstage runs node directly on yarn-installed modules and never runs npm at runtime. Fixed by the next upstream node image rebuild, which a redeploy pulls."
+    expired_at: 2026-11-30
+  - id: CVE-2026-19534
+    paths:
+      - "usr/local/lib/node_modules/npm/**"
+    statement: "Reviewed 2026-10-23. Package bundled inside the npm tool of the node base image. Backstage runs node directly on yarn-installed modules and never runs npm at runtime. Fixed by the next upstream node image rebuild, which a redeploy pulls."
+    expired_at: 2026-11-30
