@@ -6,7 +6,7 @@
 # PACKAGE MANIFEST STAGE
 #==============================================================================
 
-FROM node:24-trixie-slim AS packages
+FROM node:25-trixie-slim AS packages
 
 USER node
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN find packages \! -name package.json -mindepth 2 -maxdepth 2 -exec rm -rf {} 
 # APPLICATION BUILD STAGE
 #==============================================================================
 
-FROM node:24-trixie-slim AS build
+FROM node:25-trixie-slim AS build
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -48,7 +48,7 @@ RUN mkdir packages/backend/dist/skeleton packages/backend/dist/bundle && \
 # PRODUCTION RUNTIME STAGE
 #==============================================================================
 
-FROM node:24-trixie-slim
+FROM node:25-trixie-slim
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
