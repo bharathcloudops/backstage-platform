@@ -69,6 +69,16 @@ GitHub Actions runs [scripts/validate-ci.sh](scripts/validate-ci.sh) in the pinn
 Node 24 image. Public pull requests remain on the free GitHub-hosted runner and
 cannot access the private OCI host.
 
+## Dependency Advisories
+
+Audit the locked dependency tree with:
+
+```bash
+node .yarn/releases/yarn-4.13.0.cjs npm audit --all --recursive --severity high
+```
+
+Re-resolve vulnerable packages to their newest in-range versions with `yarn up -R <package>`, which changes only `yarn.lock`. The October 2026 refresh moved the tree from 6 critical and 49 high advisories to 1 critical and 19 high. The remainder is mostly build-time tooling that is not part of the runtime image process: `tar` through `node-gyp`, `adm-zip` and `undici` through the module federation bundler plugin, and `braces` through `chokidar`. Runtime packages without an in-range fix, such as `node-forge`, `basic-ftp`, `js-yaml` through `swagger-ui-react`, and `@graphql-tools/utils`, are re-checked on each Backstage upgrade. The runtime image uses `node:24-trixie-slim`, which is pulled on every deploy so Node.js security releases are picked up by redeploying.
+
 ## Production Stack
 
 [compose.yaml](compose.yaml) defines four services with pinned images and resource limits.
